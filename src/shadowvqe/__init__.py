@@ -51,6 +51,7 @@ from .rdm import (
 )
 from .validation import ValidationSuite
 from .visualization import plot_convergence, plot_comparison, plot_shadow_histogram
+from . import visualization_research
 
 __all__ = [
     "__version__",
@@ -92,4 +93,5 @@ __all__ = [
     "plot_convergence",
     "plot_comparison",
     "plot_shadow_histogram",
+    "visualization_research",
 ]

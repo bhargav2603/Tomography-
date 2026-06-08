@@ -37,6 +37,7 @@ from shadowvqe.ansatz import hardware_efficient_ansatz
 from shadowvqe.vqe import VQE
 from shadowvqe.shadows import ClassicalShadows
 from shadowvqe.validation import exact_ground_state_energy
+from shadowvqe.visualization_research import plot_shadow_scaling_research
 
 
 def run_shadow_scaling(
@@ -104,49 +105,15 @@ def run_shadow_scaling(
     else:
         print(f"NOTE: Slope deviates from -0.5 — consider increasing n_trials for better statistics")
 
-    # ── Plot ─────────────────────────────────────────────────────────────────
-    plt.rcParams.update({
-        "figure.dpi": 150, "axes.grid": True, "grid.alpha": 0.3,
-        "axes.spines.top": False, "axes.spines.right": False,
-        "font.size": 11, "figure.facecolor": "white",
-    })
-
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(13, 5))
-
-    # Panel 1 — Linear scale
-    ax1.errorbar(n_shadows_list, mean_errors, yerr=std_errors,
-                 fmt="ro-", ms=6, capsize=4, label="Shadow error (mean ± std)")
-    ax1.axhline(1.594e-3, color="green", linestyle="--", lw=1.5,
-                label="Chemical accuracy")
-    ax1.set_xlabel("Number of Shadows (N)")
-    ax1.set_ylabel("|Error| (Ha)")
-    ax1.set_title("Shadow Error vs Shot Count")
-    ax1.legend()
-
-    # Panel 2 — Log-log scale (shows the 1/√N slope)
-    ax2.loglog(n_shadows_list, mean_errors, "ro-", ms=6, label="Shadow error")
-
-    # Overlay theoretical 1/√N line, scaled to match at midpoint
-    mid = len(n_shadows_list) // 2
-    scale = mean_errors[mid] * np.sqrt(n_shadows_list[mid])
-    theory_line = [scale / np.sqrt(n) for n in n_shadows_list]
-    ax2.loglog(n_shadows_list, theory_line, "k--", lw=1.5,
-               label=f"1/√N fit  (slope={slope:.2f})")
-    ax2.axhline(1.594e-3, color="green", linestyle="--", lw=1.5,
-                label="Chemical accuracy")
-    ax2.set_xlabel("Number of Shadows (N)")
-    ax2.set_ylabel("|Error| (Ha)")
-    ax2.set_title("Log-Log: Confirms 1/√N Scaling")
-    ax2.legend()
-
-    fig.suptitle("Study 2: Classical Shadow Error Scales as 1/√N",
-                 fontsize=13, fontweight="bold")
-    fig.tight_layout()
-
-    for ext in ("png", "pdf"):
-        fig.savefig(fig_dir / f"study2_shadow_scaling.{ext}", bbox_inches="tight")
-
-    print(f"\nFigure saved: {fig_dir}/study2_shadow_scaling.png")
+    # ── Professional publication-quality figure ─────────────────────────────
+    fig, ax = plot_shadow_scaling_research(
+        n_shadows_list=n_shadows_list,
+        mean_errors=mean_errors,
+        std_errors=std_errors,
+        theory_slope=-0.5,
+        savedir=fig_dir,
+    )
+    print(f"\n✓ Figure saved: {fig_dir}/research_shadow_scaling.png/pdf")
 
     results = {
         "n_shadows_list": n_shadows_list,
