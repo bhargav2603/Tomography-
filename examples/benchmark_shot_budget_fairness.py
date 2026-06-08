@@ -47,6 +47,7 @@ from shadowvqe.ansatz import hardware_efficient_ansatz
 from shadowvqe.vqe import VQE
 from shadowvqe.shadows import ClassicalShadows
 from shadowvqe.validation import exact_ground_state_energy
+from shadowvqe.visualization_research import plot_shot_budget_research
 
 # ── Configuration ─────────────────────────────────────────────────────────
 SEED = 42
@@ -239,84 +240,33 @@ def _print_crossover(all_results: list[dict]) -> None:
 
 
 def _plot(all_results: list[dict]) -> None:
-    plt.rcParams.update({
-        "figure.dpi": 150, "axes.grid": True, "grid.alpha": 0.25,
-        "axes.spines.top": False, "axes.spines.right": False,
-        "font.size": 11, "figure.facecolor": "white",
-    })
-
-    PAL = {"vqe": "#2980b9", "shadow": "#e74c3c", "acc": "#27ae60"}
-    lw, ms = 2.0, 6
-
-    n_mol = len(all_results)
-    fig = plt.figure(figsize=(6 * n_mol, 12))
-    gs = gridspec.GridSpec(2, n_mol, hspace=0.40, wspace=0.30)
-
-    for col, r in enumerate(all_results):
+    """Generate professional publication-quality figures for each molecule."""
+    for idx, r in enumerate(all_results):
         budgets = r["budgets"]
-        n_groups = r["n_groups"]
+        vqe_errors = np.array(r["vqe_mean_err"])
+        vqe_stds = np.array(r["vqe_std_err"])
+        shadow_errors = np.array(r["shadow_mean_err"])
+        shadow_stds = np.array(r["shadow_std_err"])
 
-        # ── Row 0: Mean error vs budget (log-log) ────────────────────────
-        ax = fig.add_subplot(gs[0, col])
-        ve = np.array(r["vqe_mean_err"])
-        vs = np.array(r["vqe_std_err"])
-        se = np.array(r["shadow_mean_err"])
-        ss = np.array(r["shadow_std_err"])
-
-        ax.loglog(budgets, ve, "o-", color=PAL["vqe"], lw=lw, ms=ms,
-                  label=f"VQE ({n_groups} groups)")
-        ax.fill_between(budgets, np.maximum(ve - vs, 1e-8), ve + vs,
-                        alpha=0.2, color=PAL["vqe"])
-        ax.loglog(budgets, se, "s--", color=PAL["shadow"], lw=lw, ms=ms,
-                  label="Shadow-VQE (all shots)")
-        ax.fill_between(budgets, np.maximum(se - ss, 1e-8), se + ss,
-                        alpha=0.2, color=PAL["shadow"])
-        ax.axhline(CHEM_ACC, color=PAL["acc"], ls="--", lw=1.5,
-                   label="Chem. acc.")
-
-        # Mark crossover point
-        for b, v, s in zip(budgets, ve, se):
-            if s < v:
-                ax.axvline(b, color="gray", ls=":", lw=1.2, alpha=0.6)
-                ax.text(b * 1.05, ax.get_ylim()[0] * 2,
-                        f"x-over\nB={b}", fontsize=7, color="gray")
-                break
-
-        ax.set_xlabel("Total Shot Budget", fontsize=11)
-        ax.set_ylabel("|E - E_exact| (Hartree)", fontsize=11)
-        ax.set_title(
-            f"{chr(65+col)}   {r['name']} (q={r['n_qubits']})",
-            fontweight="bold", fontsize=12,
+        fig, ax = plot_shot_budget_research(
+            budgets=budgets,
+            vqe_errors_mean=vqe_errors,
+            vqe_errors_std=vqe_stds,
+            shadow_errors_mean=shadow_errors,
+            shadow_errors_std=shadow_stds,
+            chem_accuracy=CHEM_ACC,
+            savedir=FIGURES,
         )
-        ax.legend(fontsize=8)
+        # Rename the generic output file to include molecule name
+        import shutil
+        for ext in ("png", "pdf"):
+            generic = FIGURES / f"research_shot_budget.{ext}"
+            specific = FIGURES / f"research_shot_budget_{r['name'].lower()}.{ext}"
+            if generic.exists():
+                shutil.move(generic, specific)
+                print(f"  Saved: {specific}")
 
-        # ── Row 1: Effective shots breakdown ─────────────────────────────
-        ax2 = fig.add_subplot(gs[1, col])
-        eff_vqe = np.array(budgets) // max(n_groups, 1)
-        ax2.semilogx(budgets, eff_vqe, "o-", color=PAL["vqe"], lw=lw, ms=ms,
-                     label=f"VQE: B/{n_groups} per group")
-        ax2.semilogx(budgets, budgets, "s--", color=PAL["shadow"], lw=lw, ms=ms,
-                     label="Shadow: full B")
-        ax2.fill_between(budgets, eff_vqe, budgets, alpha=0.12,
-                         color=PAL["shadow"], label="Shadow advantage zone")
-        ax2.set_xlabel("Total Shot Budget", fontsize=11)
-        ax2.set_ylabel("Effective Shots for Estimation", fontsize=11)
-        ax2.set_title(
-            f"{chr(65+n_mol+col)}   Shot Allocation Breakdown",
-            fontweight="bold", fontsize=12,
-        )
-        ax2.legend(fontsize=8)
-
-    fig.suptitle(
-        "Study 6 — Fixed Shot Budget: VQE vs Shadow-VQE",
-        fontsize=15, fontweight="bold", y=1.01,
-    )
-
-    for fmt in ("png", "pdf"):
-        fig.savefig(FIGURES / f"study6_shot_budget.{fmt}",
-                    dpi=180, bbox_inches="tight")
-    plt.close(fig)
-    print(f"Figure saved: {FIGURES}/study6_shot_budget.png  (.pdf)")
+        plt.close(fig)
 
 
 if __name__ == "__main__":

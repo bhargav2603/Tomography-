@@ -49,6 +49,7 @@ from shadowvqe.fmo import (
     run_fmo, measurement_cost_report, direct_vqe_cost,
 )
 from shadowvqe.rdm import rdm_measurement_cost
+from shadowvqe.visualization_research import plot_vqe_shadow_comparison_research, plot_variance_reduction_research, plot_measurement_cost_research, plot_fmo_scaling_research
 from shadowvqe.validation import sparse_ground_state_energy
 
 # ── Configuration ─────────────────────────────────────────────────────────

@@ -37,6 +37,7 @@ from shadowvqe.hamiltonians import h2_hamiltonian
 from shadowvqe.molecules import lih_hamiltonian, beh2_hamiltonian, molecule_summary
 from shadowvqe.vqe import VQE
 from shadowvqe.shadow_vqe import ShadowVQE
+from shadowvqe.visualization_research import plot_vqe_shadow_comparison_research, plot_variance_reduction_research, plot_measurement_cost_research, plot_fmo_scaling_research
 from shadowvqe.validation import exact_ground_state_energy
 from shadowvqe.shadows import ClassicalShadows
 
