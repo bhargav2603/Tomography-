@@ -34,6 +34,21 @@ from .derandomized_shadows import (
 )
 from .vqe import VQE, VQEResult
 from .shadow_vqe import ShadowVQE, ShadowVQEResult
+from .fmo import (
+    Fragment,
+    FragmentSystem,
+    FMOResult,
+    run_fmo,
+    assemble_fmo2_energy,
+    measurement_cost_report,
+    direct_vqe_cost,
+)
+from .rdm import (
+    one_rdm_from_shadows,
+    exact_one_rdm,
+    rdm_measurement_cost,
+    RDMResult,
+)
 from .validation import ValidationSuite
 from .visualization import plot_convergence, plot_comparison, plot_shadow_histogram
 
@@ -58,6 +73,19 @@ __all__ = [
     # shadow vqe
     "ShadowVQE",
     "ShadowVQEResult",
+    # fmo / fragment methods
+    "Fragment",
+    "FragmentSystem",
+    "FMOResult",
+    "run_fmo",
+    "assemble_fmo2_energy",
+    "measurement_cost_report",
+    "direct_vqe_cost",
+    # reduced density matrices
+    "one_rdm_from_shadows",
+    "exact_one_rdm",
+    "rdm_measurement_cost",
+    "RDMResult",
     # validation
     "ValidationSuite",
     # visualization

@@ -56,6 +56,37 @@ def exact_ground_state_energy(hamiltonian: SparsePauliOp) -> float:
     return e0
 
 
+def sparse_ground_state_energy(hamiltonian: SparsePauliOp, max_qubits: int = 18) -> float:
+    """
+    Exact ground-state energy via sparse Lanczos (scipy eigsh).
+
+    Feasible for moderately larger systems than dense diagonalisation
+    (up to ~18 qubits) because it never forms the dense matrix.
+
+    Parameters
+    ----------
+    hamiltonian : SparsePauliOp
+    max_qubits  : Hard ceiling to avoid runaway memory.
+
+    Returns
+    -------
+    float : smallest eigenvalue.
+    """
+    n = hamiltonian.num_qubits
+    if n > max_qubits:
+        raise ValueError(
+            f"sparse_ground_state_energy: {n} qubits exceeds limit {max_qubits}."
+        )
+    if n <= 10:
+        return exact_ground_state_energy(hamiltonian)
+    from scipy.sparse.linalg import eigsh
+    sp = hamiltonian.to_matrix(sparse=True).tocsr()
+    vals = eigsh(sp, k=1, which="SA", return_eigenvectors=False, maxiter=5000)
+    e0 = float(np.real(vals[0]))
+    _log.debug("Sparse ground state energy (%d qubits): %.10f", n, e0)
+    return e0
+
+
 def exact_ground_state(hamiltonian: SparsePauliOp) -> tuple[float, np.ndarray]:
     """
     Return the exact ground-state energy and eigenvector.
