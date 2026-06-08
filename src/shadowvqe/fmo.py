@@ -35,12 +35,9 @@ scaling; embedding can be layered on later.
 from __future__ import annotations
 
 import warnings
-from dataclasses import dataclass, field
-from itertools import combinations
+from dataclasses import dataclass
 from typing import Literal
 
-import numpy as np
-from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp
 
 from .ansatz import hardware_efficient_ansatz

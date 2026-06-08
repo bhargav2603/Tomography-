@@ -19,8 +19,6 @@ Each function returns a SparsePauliOp ready for VQE / ShadowVQE.
 
 from __future__ import annotations
 
-import warnings
-from functools import lru_cache
 from typing import Sequence
 
 import numpy as np
@@ -326,7 +324,6 @@ def hydrogen_chain_fragments(
         raise ValueError("n_units must be >= 2")
 
     # Atomic z-positions for each unit
-    unit_geoms: list[str] = []
     z = 0.0
     unit_z: list[tuple[float, float]] = []
     for _ in range(n_units):
@@ -434,3 +431,54 @@ def water_cluster_fragments(
         reference = _active_space_build(geom, basis, 0, 0, *pair_active)
 
     return FragmentSystem(f"(H2O){n_waters}", fragments, pairs, reference)
+
+
+# ---------------------------------------------------------------------------
+# Hydrogen chain builders (for benchmark scaling studies)
+# ---------------------------------------------------------------------------
+
+def hydrogen_chain(n_atoms: int, bond_distance: float = 0.735) -> SparsePauliOp:
+    """
+    Linear hydrogen chain Hamiltonian.
+
+    H-H-H-...-H (n_atoms total, all equally spaced)
+
+    Parameters
+    ----------
+    n_atoms       : Number of hydrogen atoms in chain (2-10 typical)
+    bond_distance : H-H bond distance in Angstroms (default equilibrium 0.735 Å)
+
+    Returns
+    -------
+    SparsePauliOp
+        n_atoms qubits, ~(4*n_atoms) Pauli terms
+
+    Examples
+    --------
+    >>> h4 = hydrogen_chain(4)  # 4-atom chain
+    >>> h6 = hydrogen_chain(6)  # 6-atom chain
+    """
+    if n_atoms < 2:
+        raise ValueError("hydrogen_chain requires n_atoms >= 2")
+
+    # Build linear geometry: H at (0,0,0), (d,0,0), (2d,0,0), ...
+    geometry_str = "; ".join([f"H {i*bond_distance:.4f} 0 0" for i in range(n_atoms)])
+
+    _log.info("H%d: building hydrogen chain (%.4f A bonds)", n_atoms, bond_distance)
+    return _build_hamiltonian(
+        geometry=geometry_str,
+        basis="sto-3g",
+        charge=0,
+        spin=0,
+        freeze_core=False,  # No core to freeze in H chains
+    )
+
+
+def h4_hamiltonian(bond_distance: float = 0.735) -> SparsePauliOp:
+    """H4 hydrogen chain (4 qubits)."""
+    return hydrogen_chain(4, bond_distance)
+
+
+def h6_hamiltonian(bond_distance: float = 0.735) -> SparsePauliOp:
+    """H6 hydrogen chain (6 qubits)."""
+    return hydrogen_chain(6, bond_distance)

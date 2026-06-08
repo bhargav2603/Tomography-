@@ -25,6 +25,7 @@ except PackageNotFoundError:
     __version__ = "0.0.0+dev"
 
 from .hamiltonians import h2_hamiltonian, heisenberg_hamiltonian, random_hamiltonian
+from .molecules import hydrogen_chain, h4_hamiltonian, h6_hamiltonian
 from .ansatz import hardware_efficient_ansatz, build_ansatz
 from .shadows import ClassicalShadows
 from .derandomized_shadows import (
@@ -59,6 +60,10 @@ __all__ = [
     "h2_hamiltonian",
     "heisenberg_hamiltonian",
     "random_hamiltonian",
+    # molecules
+    "hydrogen_chain",
+    "h4_hamiltonian",
+    "h6_hamiltonian",
     # ansatz
     "hardware_efficient_ansatz",
     "build_ansatz",

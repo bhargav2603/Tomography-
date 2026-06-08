@@ -11,7 +11,6 @@ from __future__ import annotations
 
 from typing import Protocol
 
-import numpy as np
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 

@@ -21,7 +21,6 @@ Protocol (single-qubit Pauli-basis variant)
 
 from __future__ import annotations
 
-import logging
 import warnings
 from collections import Counter
 from dataclasses import dataclass, field

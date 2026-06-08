@@ -8,13 +8,12 @@ between Exact, VQE, and Shadow-VQE results.
 from __future__ import annotations
 
 import json
-import textwrap
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from qiskit.quantum_info import SparsePauliOp, Operator
+from qiskit.quantum_info import SparsePauliOp
 
 from .utils import OptimizationResult, get_logger
 

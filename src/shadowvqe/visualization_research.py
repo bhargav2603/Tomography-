@@ -153,7 +153,7 @@ def plot_vqe_shadow_comparison_research(
     w = 0.6
 
     # Panel A: Energies
-    bars_a = ax1.bar(x, energies, w, color=colors, alpha=0.85, edgecolor="black", linewidth=1.2)
+    ax1.bar(x, energies, w, color=colors, alpha=0.85, edgecolor="black", linewidth=1.2)
     ax1.axhline(exact, color=_PALETTE["exact"], linestyle="--", linewidth=2,
                 label="Exact", zorder=2)
     ax1.set_xticks(x)

@@ -42,7 +42,7 @@ import numpy as np
 from qiskit.circuit import QuantumCircuit
 from qiskit.quantum_info import SparsePauliOp, Statevector
 
-from .shadows import _basis_rotation_circuit, ShadowSnapshot
+from .shadows import _basis_rotation_circuit
 from .utils import get_logger, validate_positive_int, seed_everything
 
 _log = get_logger(__name__)

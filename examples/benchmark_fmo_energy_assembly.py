@@ -34,7 +34,6 @@ from __future__ import annotations
 
 import sys
 import time
-import warnings
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "src"))
@@ -49,7 +48,6 @@ from shadowvqe.fmo import (
     run_fmo, measurement_cost_report, direct_vqe_cost,
 )
 from shadowvqe.rdm import rdm_measurement_cost
-from shadowvqe.visualization_research import plot_vqe_shadow_comparison_research, plot_variance_reduction_research, plot_measurement_cost_research, plot_fmo_scaling_research
 from shadowvqe.validation import sparse_ground_state_energy
 
 # ── Configuration ─────────────────────────────────────────────────────────
@@ -187,8 +185,8 @@ def _print_summary(records: list[dict]) -> None:
               f"{se:>15} {r['fmo_shadow_settings']:>11} "
               f"{r['fmo_grouped_settings']:>12}")
     print("=" * 80)
-    print(f"  FMO qubits stay BOUNDED while direct grows.")
-    print(f"  Shadows get energy + full 1-RDM per subsystem from ONE dataset.")
+    print("  FMO qubits stay BOUNDED while direct grows.")
+    print("  Shadows get energy + full 1-RDM per subsystem from ONE dataset.")
     print("=" * 80 + "\n")
 
 
@@ -248,7 +246,6 @@ def _plot(records: list[dict]) -> None:
     # ── C: Qubit advantage ────────────────────────────────────────────────
     ax3 = fig.add_subplot(gs[1, 0])
     fmo_q = [r["max_qubits"] for r in records]
-    dir_q = [r["direct_qubits"] for r in records]
     ax3.plot(x, fmo_q, "o-", color=PAL["fmo"], lw=2.4, ms=9,
              label="FMO (max subsystem)")
     # extrapolate direct line even where not computed
@@ -330,8 +327,8 @@ def _water_demo() -> None:
           f"= {e_int_exact*kcal:.2f} kcal/mol")
     print(f"  Interaction energy (shadow): {e_int_shadow:.6f} Ha "
           f"= {e_int_shadow*kcal:.2f} kcal/mol")
-    print(f"  (This hydrogen-bond energy comes from shadow-estimated "
-          f"fragment + pair energies.)")
+    print("  (This hydrogen-bond energy comes from shadow-estimated "
+          "fragment + pair energies.)")
     print("=" * 72 + "\n")
 
 
