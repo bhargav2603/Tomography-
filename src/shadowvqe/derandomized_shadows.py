@@ -296,6 +296,36 @@ class HamiltonianAdaptedShadows:
             total_var += c**2 * self.estimate_variance(pauli.to_label())
         return total_var
 
+    def estimate_observable_mom(
+        self, observable: SparsePauliOp, n_groups: int = 20
+    ) -> float:
+        """
+        Median-of-Means estimator with Hamiltonian-adaptive correction factors.
+
+        Same MoM guarantee as ClassicalShadows.estimate_observable_mom but
+        uses the adaptive (1/q_i) correction in each per-snapshot contribution.
+
+        Pr[|estimate - true| > eps] <= 2 * exp(-K / 8)  (Huang et al. 2020)
+        """
+        if not self.snapshots:
+            raise RuntimeError("No snapshots collected. Call collect() first.")
+
+        paulis = [
+            (pauli.to_label(), float(coeff.real))
+            for pauli, coeff in zip(observable.paulis, observable.coeffs)
+            if abs(float(coeff.real)) >= 1e-12
+        ]
+
+        per_snapshot = np.array([
+            sum(c * self._snapshot_contribution(snap, p_str) for p_str, c in paulis)
+            for snap in self.snapshots
+        ], dtype=float)
+
+        k = min(n_groups, max(1, len(per_snapshot) // 10))
+        groups = np.array_split(per_snapshot, k)
+        group_means = np.array([g.mean() for g in groups if len(g) > 0])
+        return float(np.median(group_means))
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------

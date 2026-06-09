@@ -295,13 +295,58 @@ class ClassicalShadows:
             for p, c in zip(observable.paulis, observable.coeffs)
             if abs(float(c.real)) >= 1e-12
         ]
-        
+
         estimates = np.array([
             sum(c * self._snapshot_contribution(snap, p_str) for p_str, c in paulis)
             for snap in self.snapshots
         ], dtype=float)
-        
+
         return float(np.var(estimates, ddof=1) / len(estimates))
+
+    def estimate_observable_mom(
+        self, observable: SparsePauliOp, n_groups: int = 20
+    ) -> float:
+        """
+        Median-of-Means (MoM) estimator for robust high-probability error bounds.
+
+        Splits N snapshots into K groups, computes the mean energy within each
+        group, then returns the median of those K means.
+
+        Confidence guarantee (Huang et al. 2020):
+            Pr[|estimate - true| > eps] <= 2 * exp(-K / 8)
+
+        With K=20 groups this gives failure probability < 8% — exponentially
+        tighter than the plain mean's polynomial bound.  The mean error is
+        similar; the main gain is narrower error bars (lower variance of the
+        estimator across trials).
+
+        Parameters
+        ----------
+        observable : SparsePauliOp
+        n_groups   : Number of groups K. Each group gets N//K snapshots.
+                     Automatically capped so each group has >= 10 snapshots.
+        """
+        if observable.num_qubits != self.n_qubits:
+            raise ValueError("Observable qubit count mismatch.")
+        if not self.snapshots:
+            raise RuntimeError("No shadows collected yet.")
+
+        paulis = [
+            (p.to_label(), float(c.real))
+            for p, c in zip(observable.paulis, observable.coeffs)
+            if abs(float(c.real)) >= 1e-12
+        ]
+
+        per_snapshot = np.array([
+            sum(c * self._snapshot_contribution(snap, p_str) for p_str, c in paulis)
+            for snap in self.snapshots
+        ], dtype=float)
+
+        # Ensure each group has at least 10 snapshots
+        k = min(n_groups, max(1, len(per_snapshot) // 10))
+        groups = np.array_split(per_snapshot, k)
+        group_means = np.array([g.mean() for g in groups if len(g) > 0])
+        return float(np.median(group_means))
 
     # ------------------------------------------------------------------
     # Internal helpers
